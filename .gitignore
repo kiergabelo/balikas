@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data (regenerate via: python data/download.py)
+data/hatespeech_raw.zip
+data/hatespeech/
+data/splits.json
+data/splits_ceb.json       # abandoned: NLLB translation output (see README)
+
+# Models (regenerate via: python train/train_baseline.py or train/finetune_roberta.py)
+model/baseline.joblib
+model/baseline_*.joblib
+model/baseline_metrics.json
+model/baseline_*_metrics.json
+model/roberta-tagalog-finetuned/
+model/roberta_metrics.json
+
+# Metrics actually shipped (small JSON, legit artifacts — NOT ignored)
+!model/zeroshot_ceb_metrics.json
+!data/ceb_eval_handcurated.json
+
+# Colab / IDE
+.ipynb_checkpoints/
+.idea/
+.vscode/
+
+# Logs
+*.log

@@ -1,0 +1,202 @@
+[
+  {
+    "text": "Maayong buntag sa tanan, maayo unta ang inyong adlaw.",
+    "label": 0,
+    "note": "greeting"
+  },
+  {
+    "text": "Salamat kaayo sa tabang nimo kagahapon.",
+    "label": 0,
+    "note": "gratitude"
+  },
+  {
+    "text": "Ang bag-ong tulay sa lungsod gisirhan na sa miaging semana.",
+    "label": 0,
+    "note": "news"
+  },
+  {
+    "text": "Magtuon ko sa eksamen para sa sunod nga adlaw.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Mga estudyante sa unibersidad nagtipon karong Sabado.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Maayong buntag, kumusta ang imong pagpangita og trabaho?",
+    "label": 0,
+    "note": "conversational"
+  },
+  {
+    "text": "Naglibang ko sa parke kagahapon gabii.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Ang akon pamilya nagapuyo sa Cebu.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Sikat kaayo ang lumpia sa pista.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Maayo ang panahon karon, uwanan unya gabii.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Aduna bay magapamaligya og isda diri?",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Ang simbahan sa lungsod daan na kaayo apan gipreserbar.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Mga bata nagadula sa plasa.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Ang akon igsoon nagatrabaho sa syudad.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Nagtuon ko og Sinugbuanon karong tuiga.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Maayong gabii kaninyong tanan.",
+    "label": 0,
+    "note": "greeting"
+  },
+  {
+    "text": "Salamat sa pagtabang sa among komunidad.",
+    "label": 0,
+    "note": "gratitude"
+  },
+  {
+    "text": "Ang bag-ong eskwelahan gibuksan na niadtong lunes.",
+    "label": 0,
+    "note": "news"
+  },
+  {
+    "text": "Magbakal ko og bag-ong sapatos sa pula nga presyo.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Mga mag-uuma nag-ani sa uma kung umaga.",
+    "label": 0,
+    "note": "neutral"
+  },
+  {
+    "text": "Buanga kaayo ka, ulol!",
+    "label": 1,
+    "note": "profanity + insult"
+  },
+  {
+    "text": "Yawa ka, ulay sa imong kinabuhi!",
+    "label": 1,
+    "note": "profanity insult"
+  },
+  {
+    "text": "Putang ina mo, inyong kandidato bura!",
+    "label": 1,
+    "note": "profanity"
+  },
+  {
+    "text": "Animal ka, dili ka tao!",
+    "label": 1,
+    "note": "dehumanizing insult"
+  },
+  {
+    "text": "Baboy ka, hilom na lang unta ka.",
+    "label": 1,
+    "note": "dehumanizing insult"
+  },
+  {
+    "text": "Buang ka, ulol, tanga! Wala kay nahibaloan!",
+    "label": 1,
+    "note": "profanity chain"
+  },
+  {
+    "text": "Ang imong kandidata, hakog kaayo, kawatan!",
+    "label": 1,
+    "note": "political slur"
+  },
+  {
+    "text": "Patyon ta ikaw kung dili ka motiil.",
+    "label": 1,
+    "note": "death threat"
+  },
+  {
+    "text": "Mga kawatan ang pulitiko, tanan sila ulol!",
+    "label": 1,
+    "note": "political slur chain"
+  },
+  {
+    "text": "Pisti, inyong gobyerno way ayo, tanan!",
+    "label": 1,
+    "note": "profanity + broad attack"
+  },
+  {
+    "text": "Putang ina inyong pamilya, tanan mogasto sa kwarta sa tawo!",
+    "label": 1,
+    "note": "profanity + accusation"
+  },
+  {
+    "text": "Bilat sa imong nawong, bilib kaayo ko nimo ulol!",
+    "label": 1,
+    "note": "profanity + insult"
+  },
+  {
+    "text": "Inyong mayor, kawatan, lagpak ang pangulo!",
+    "label": 1,
+    "note": "political slur"
+  },
+  {
+    "text": "Tanga ka, wa kay kahibalo sa imong gipanghambael!",
+    "label": 1,
+    "note": "intellectual insult"
+  },
+  {
+    "text": "Linte, piste, pisti inyong tanan!",
+    "label": 1,
+    "note": "profanity chain"
+  },
+  {
+    "text": "Ulol mong tanan, bilib man mo sa inyong kandidato bura!",
+    "label": 1,
+    "note": "profanity + group attack"
+  },
+  {
+    "text": "Pisti, awto mo, paborito mo ang mga lahing bura!",
+    "label": 1,
+    "note": "profanity + racist slur"
+  },
+  {
+    "text": "Buwisit mo, ulol ka, yawa, ulol mong pamilya!",
+    "label": 1,
+    "note": "profanity chain"
+  },
+  {
+    "text": "Tanga kaayo ang botante, tanan sila ulol!",
+    "label": 1,
+    "note": "voter dehumanization"
+  },
+  {
+    "text": "Patyon nominal ra ang dili mosugot, tanan lagpason!",
+    "label": 1,
+    "note": "threat"
+  }
+]

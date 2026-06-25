@@ -1,0 +1,22 @@
+{
+  "setup": "zero-shot Tagalog model -> Cebuano hand-curated eval",
+  "acc": 0.8,
+  "f1_hate": 0.8333333333333334,
+  "precision_hate": 0.7142857142857143,
+  "recall_hate": 1.0,
+  "macro_f1": 0.7916666666666667,
+  "cm": [
+    [
+      12,
+      8
+    ],
+    [
+      0,
+      20
+    ]
+  ],
+  "eval_seconds": 0.009279966354370117,
+  "tagalog_in_domain_f1": 0.7488653555219364,
+  "transfer_gap": -0.08446797781139692,
+  "n": 40
+}
