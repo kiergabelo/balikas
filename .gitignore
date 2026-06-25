@@ -22,6 +22,9 @@ model/roberta_metrics.json
 !model/zeroshot_ceb_metrics.json
 !data/ceb_eval_handcurated.json
 
+# HuggingFace Space (self-contained, ships its own model copy)
+!space/baseline_tl.joblib
+
 # Colab / IDE
 .ipynb_checkpoints/
 .idea/

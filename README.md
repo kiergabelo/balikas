@@ -73,6 +73,9 @@ Three reasons I dropped it:
 
 ## Quick start
 
+**Live demo (HuggingFace Space):** _deploy the `space/` folder to an HF Space
+repo (see "Deploy the Space" below) → `https://huggingface.co/spaces/<your-user>/balikas`._
+
 ```bash
 python -m venv .venv; .venv\Scripts\activate
 pip install -r api/requirements.txt
@@ -85,6 +88,27 @@ python train/eval_zero_shot_ceb.py          # evaluates the TL model on Cebuano
 
 uvicorn api.main:app --reload               # localhost:8000/classify
 ```
+
+## Deploy the Space (the public "website")
+
+The `space/` folder is a self-contained HuggingFace Spaces app (Gradio +
+the trained model baked in, ~880 KB). To deploy:
+
+1. Create a free HuggingFace account if you don't have one.
+2. Create a new Space at <https://huggingface.co/new-space>:
+   - **SDK:** Gradio
+   - **License:** Apache-2.0
+   - **Hardware:** CPU basic (free)
+3. Push the contents of `space/` (not the folder itself — the files at root):
+   ```bash
+   git clone https://huggingface.co/spaces/<your-user>/balikas
+   Copy-Item -Path "space\*" -Destination balikas-space\ -Recurse -Force
+   cd balikas-space
+   git add -A && git commit -m "Initial Space: Balikas demo" && git push
+   ```
+4. Wait ~1-2 min for the Space to build. Public URL will be
+   `https://huggingface.co/spaces/<your-user>/balikas`.
+5. Drop that URL into the portfolio entry's `demo` field.
 
 Classify a tweet:
 
