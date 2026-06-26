@@ -32,3 +32,6 @@ model/roberta_metrics.json
 
 # Logs
 *.log
+
+# Portfolio integration guide (not part of the project)
+INTEGRATION.md
