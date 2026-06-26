@@ -41,8 +41,8 @@ transfer study built around it — is the core of this project, not an API wrapp
 |---|---|---|---|---|---|---|
 | 1 | Tagalog in-domain | 4,232 native labeled tweets (held-out) | 0.7647 | **0.7489** | 0.7637 | TF-IDF (word 1-2gram) + LogReg, ~0.7s CPU |
 | 2 | Zero-shot TL→CEB | 40 hand-curated Bisaya sentences | 0.8000 | **0.8333** | 0.7917 | same TF-IDF model, no Cebuano training |
-| 3 | XLM-RoBERTa on TL | 4,232 native labeled tweets (held-out) | _TBD_ | _TBD_ | _TBD_ | run `train/finetune_xlm.py` on Colab T4 (~25 min) |
-| 4 | XLM-RoBERTa → CEB | 40 hand-curated Bisaya sentences | _TBD_ | _TBD_ | _TBD_ | zero-shot (no Cebuano training — shared subword vocab only) |
+| 3 | XLM-RoBERTa on TL | 4,232 native labeled tweets (held-out) | 0.7854 | **0.7646** | 0.7838 | run `train/finetune_xlm.py` on Colab T4 (~25 min) |
+| 4 | XLM-RoBERTa → CEB | 40 hand-curated Bisaya sentences | 0.6500 | **0.7407** | 0.6011 | zero-shot (no Cebuano training — shared subword vocab only) |
 
 ### Caveat on the cross-lingual number
 
