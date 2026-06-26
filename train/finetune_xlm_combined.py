@@ -69,26 +69,72 @@ print(f"  Tagalog: train={len(ds_tl['train'])}, valid={len(ds_tl['valid'])}, tes
 # 2. Load SEACrowd Filipino TikTok hate speech (Taglish + Cebuano)
 # ═══════════════════════════════════════════════════════════════════════════
 print("Loading SEACrowd Filipino TikTok hate speech ...")
+tiktok_all = None
 try:
-    ds_tiktok = load_dataset("SEACrowd/filipino_hatespeech_tiktok", trust_remote_code=True)
-    tiktok_all = ds_tiktok["train"] if "train" in ds_tiktok else ds_tiktok[list(ds_tiktok.keys())[0]]
-    # Normalize column names to {text, label}
-    cols = tiktok_all.column_names
-    text_col = "text" if "text" in cols else cols[0]
-    label_col = "label" if "label" in cols else ("hate" if "hate" in cols else cols[-1])
-    tiktok_all = tiktok_all.rename_column(text_col, "text").rename_column(label_col, "label")
-    # Ensure labels are 0/1
-    def normalize_label(ex):
-        v = ex["label"]
-        if isinstance(v, str):
-            v = 1 if v.lower() in ("1", "true", "yes", "hate") else 0
-        ex["label"] = int(v)
-        return ex
-    tiktok_all = tiktok_all.map(normalize_label)
-    # Keep only text + label columns
-    keep = {"text", "label"}
-    tiktok_all = tiktok_all.remove_columns([c for c in tiktok_all.column_names if c not in keep])
-    print(f"  TikTok: {len(tiktok_all)} samples (Taglish + Cebuano)")
+    # Attempt 1: HF datasets library (may fail if loading scripts unsupported)
+    try:
+        ds_tiktok = load_dataset("SEACrowd/filipino_hatespeech_tiktok", trust_remote_code=True)
+        tiktok_all = ds_tiktok["train"] if "train" in ds_tiktok else ds_tiktok[list(ds_tiktok.keys())[0]]
+    except Exception:
+        pass
+
+    # Attempt 2: Download raw CSV directly from GitHub
+    if tiktok_all is None:
+        import subprocess, csv
+        print("  HF loading script unsupported — downloading raw data from GitHub ...")
+        subprocess.run(["git", "clone", "--depth", "1",
+                        "https://github.com/imperialite/filipino-tiktok-hatespeech.git",
+                        "/tmp/tiktok-hs"], check=True, capture_output=True)
+        tiktok_rows = []
+        for root, dirs, files in os.walk("/tmp/tiktok-hs"):
+            for fn in files:
+                if fn.endswith(".csv"):
+                    path = os.path.join(root, fn)
+                    try:
+                        with open(path, encoding="utf-8", errors="ignore") as f:
+                            rdr = csv.DictReader(f)
+                            for row in rdr:
+                                # Try common column name patterns
+                                text = row.get("text") or row.get("tweet") or row.get("content") or row.get("sentence") or ""
+                                label_raw = row.get("label") or row.get("hate") or row.get("classification") or row.get("hate_label") or ""
+                                if not text:
+                                    continue
+                                if isinstance(label_raw, str):
+                                    label = 1 if label_raw.strip() in ("1", "true", "True", "yes", "hate") else 0
+                                else:
+                                    label = int(label_raw)
+                                tiktok_rows.append({"text": text.strip(), "label": label})
+                    except Exception:
+                        pass
+        if tiktok_rows:
+            tiktok_all = Dataset.from_list(tiktok_rows)
+            print(f"  Loaded {len(tiktok_all)} samples from GitHub CSVs")
+        else:
+            raise RuntimeError("No CSV data found in the GitHub repo")
+
+    if tiktok_all is not None:
+        # Normalize column names
+        cols = tiktok_all.column_names
+        if "text" not in cols:
+            text_col = cols[0]
+            tiktok_all = tiktok_all.rename_column(text_col, "text")
+        if "label" not in cols:
+            label_col = [c for c in cols if c != "text"][0]
+            tiktok_all = tiktok_all.rename_column(label_col, "label")
+
+        # Ensure labels are int 0/1
+        def normalize_label(ex):
+            v = ex["label"]
+            if isinstance(v, str):
+                v = 1 if v.lower() in ("1", "true", "yes", "hate") else 0
+            ex["label"] = int(v)
+            return ex
+        tiktok_all = tiktok_all.map(normalize_label)
+
+        keep = {"text", "label"}
+        tiktok_all = tiktok_all.remove_columns([c for c in tiktok_all.column_names if c not in keep])
+        print(f"  TikTok: {len(tiktok_all)} samples (Taglish + Cebuano)")
+
 except Exception as e:
     print(f"  TikTok load failed: {e}")
     print("  Continuing with Tagalog only")
