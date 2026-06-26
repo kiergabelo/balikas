@@ -120,7 +120,7 @@ args = TrainingArguments(
 trainer = Trainer(
     model=model, args=args,
     train_dataset=train_ds, eval_dataset=valid_ds,
-    tokenizer=tok, data_collator=DataCollatorWithPadding(tok),
+    data_collator=DataCollatorWithPadding(tok),
     compute_metrics=compute_metrics,
 )
 
