@@ -10,16 +10,14 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(HERE, "xlm-roberta-balikas")
+MODEL_ID = "kiergabelo/balikas-xlm"
 
 if os.path.exists(MODEL_DIR):
     tok = AutoTokenizer.from_pretrained(MODEL_DIR)
     model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 else:
-    # Fallback: download the base model if fine-tuned weights aren't present yet
-    tok = AutoTokenizer.from_pretrained("xlm-roberta-base")
-    model = AutoModelForSequenceClassification.from_pretrained(
-        "xlm-roberta-base", num_labels=2
-    )
+    tok = AutoTokenizer.from_pretrained(MODEL_ID)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
 
 model.eval()
 LABELS = {0: "non-hate", 1: "hate"}
