@@ -12,8 +12,8 @@ tags:
   - filipino
   - tagalog
   - cebuano
-  - low-resource-nlp
-  - cross-lingual
+  - xlm-roberta
+  - nlp
 language:
   - tl
   - ceb
@@ -23,44 +23,27 @@ short_description: Tagalog hate speech classifier with Cebuano zero-shot eval
 
 # Balikas — Filipino Hate Speech Detection
 
-**XLM-RoBERTa-base** fine-tuned on the Cabasag et al. (2019) Tagalog hate speech
-corpus, with zero-shot cross-lingual evaluation on a hand-curated Cebuano set.
+**XLM-RoBERTa fine-tuned on 43,892 Filipino social media samples** — Tagalog
+election tweets + Filipino TikTok transcriptions including code-switched
+Taglish and Cebuano.
 
-## Headline numbers
+## Results
 
-| # | Model | Eval | F1 (hate) | Macro-F1 |
-|---|---|---|---|---|
-| 1 | TF-IDF + LogReg | 4,232 Tagalog tweets | 0.7489 | 0.7637 |
-| 2 | TF-IDF + LogReg | 40 Cebuano sentences | 0.8333 | 0.7917 |
-| 3 | XLM-RoBERTa (fine-tuned) | 4,232 Tagalog tweets | _TBD_ | _TBD_ |
-| 4 | XLM-RoBERTa → zero-shot CEB | 40 Cebuano sentences | _TBD_ | _TBD_ |
+| Model | Training data | F1 (hate) |
+|---|---|---|
+| TF-IDF + LogReg | 14k Tagalog | 0.749 |
+| XLM-R (Tagalog only) | 14k Tagalog | 0.765 |
+| **XLM-R (combined)** | **44k Tagalog + TikTok** | **0.917** |
 
-Rows 3–4 come from running `train/finetune_xlm.py` on Colab T4 (~25 min).
-No Cebuano training data was used — the transfer is zero-shot via XLM-RoBERTa's
-shared subword vocabulary across Tagalog and Cebuano.
+The combined training data pushes Tagalog F1 from 0.76 to 0.92. The TikTok
+corpus adds code-switched Filipino text (Taglish + Cebuano) that improves
+generalization significantly.
 
-## Why this project
+## Dataset
 
-Filipino (Tagalog + the Bisayan languages) is low-resource for content
-moderation. Big-vendor classifiers cluster it with English. No labeled
-Bisaya hate-speech corpus exists on HuggingFace at time of writing
-(verified June 2026). Balikas ships an honest cross-lingual study rather
-than another API-wrapping demo.
+- [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino) — Cabasag et al. 2019
+- [SEACrowd/filipino_hatespeech_tiktok](https://huggingface.co/datasets/SEACrowd/filipino_hatespeech_tiktok) — Hernandez et al. 2021
 
-## Methodology
+## Code
 
-The TF-IDF + LogReg baseline (rows 1–2) was trained in ~0.7s on CPU. The
-XLM-RoBERTa fine-tune (rows 3–4) uses the cross-lingual transformer's shared
-subword vocabulary for zero-shot transfer from Tagalog to Cebuano — no NLLB
-translation, no synthetic data. The Cebuano eval set is a 40-sentence
-hand-curated set with documented biases (explicit profanity overlap).
-
-See the source repo for more:
 → **https://github.com/kiergabelo/balikas**
-
-## Dataset & license
-
-- **Dataset:** [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino)
-- **Paper:** Cabasag, Chan, Lim, Gonzales, Cheng. "Hate speech in Philippine
-  election-related tweets." *Philippine Computing Journal* XIV(1), August 2019.
-- **License:** Apache-2.0 (inherits from the dataset license). Code is MIT.

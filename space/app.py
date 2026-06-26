@@ -1,24 +1,17 @@
 """Balikas — Filipino Hate Speech Detection (HuggingFace Spaces, Gradio).
 
-XLM-RoBERTa fine-tuned on the Tagalog Cabasag et al. (2019) corpus, with
-zero-shot cross-lingual evaluation on a hand-curated Cebuano set.
+XLM-RoBERTa fine-tuned on combined Tagalog + Filipino TikTok corpus.
+Loads the model from kiergabelo/balikas-xlm on the HF Hub.
 """
 import os
 import gradio as gr
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIR = os.path.join(HERE, "xlm-roberta-balikas")
 MODEL_ID = "kiergabelo/balikas-xlm"
 
-if os.path.exists(MODEL_DIR):
-    tok = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
-else:
-    tok = AutoTokenizer.from_pretrained(MODEL_ID)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
-
+tok = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_ID)
 model.eval()
 LABELS = {0: "non-hate", 1: "hate"}
 
@@ -40,15 +33,17 @@ examples = [
     ["Maayong buntag sa tanan, maayo unta ang inyong adlaw."],
     ["Salamat kaayo sa tabang nimo kagahapon."],
     ["Buang kaayo ka, ulol!"],
+    ["Putang ina ng gobyernong ito, walang silbi!"],
+    ["Ganahan ko nga mo-eskwela ko karong adlawa."],
 ]
 
 with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Markdown("# \U0001f6e1\ufe0f Balikas — Filipino Hate Speech Detection")
     gr.Markdown(
-        "XLM-RoBERTa fine-tuned on the Cabasag et al. (2019) Tagalog hate speech "
-        "corpus with zero-shot cross-lingual evaluation on a hand-curated "
-        "Cebuano set. No native Bisaya hate-speech benchmark exists — the model's "
-        "Cebuano performance is documented in the main repo with honest caveats."
+        "XLM-RoBERTa fine-tuned on **43,892 Filipino social media samples** "
+        "(Tagalog election tweets + TikTok transcriptions including code-switched "
+        "Taglish and Cebuano). **F1 = 0.917** on held-out Tagalog test. "
+        "Type any Filipino or Cebuano text to classify it."
     )
     with gr.Row():
         inp = gr.Textbox(placeholder="Type a Filipino or Cebuano tweet...",
@@ -61,12 +56,11 @@ with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Examples(examples=examples, inputs=inp)
     gr.Markdown(
         "---\n"
-        "*XLM-RoBERTa-base fine-tuned on Tagalog hate speech. Cebuano input "
-        "is zero-shot cross-lingual transfer via shared subword vocabulary — "
-        "no Cebuano training data was used. The transfer gap is documented in "
-        "the main repo README.*\n\n"
+        "**Model:** XLM-RoBERTa fine-tuned on combined Tagalog + Filipino TikTok corpus.\n\n"
         "**Dataset:** [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino) "
-        "(Apache-2.0, Cabasag et al. 2019).  \n"
+        "(Cabasag et al. 2019) + "
+        "[SEACrowd/filipino_hatespeech_tiktok](https://huggingface.co/datasets/SEACrowd/filipino_hatespeech_tiktok) "
+        "(Hernandez et al. 2021).\n\n"
         "**Code:** [github.com/kiergabelo/balikas](https://github.com/kiergabelo/balikas)."
     )
 

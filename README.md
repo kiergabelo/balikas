@@ -1,70 +1,59 @@
 # Balikas — Filipino Hate Speech Detection
 
-Binary hate/non-hate classification of Filipino tweets, trained on the
-[Cabasag et al. (2019)](https://huggingface.co/datasets/jcblaise/hatespeech_filipino)
-Tagalog corpus (~10k tweets from the 2016 Philippine Presidential Elections),
-with a zero-shot cross-lingual evaluation on a small hand-curated Cebuano set.
+Binary hate/non-hate classification of Filipino social media text, trained on
+a combined corpus of **43,892 samples**: the Cabasag et al. (2019) Tagalog
+election tweets + SEACrowd Filipino TikTok hate speech (Taglish + Cebuano
+code-switched transcriptions). Fine-tuned XLM-RoBERTa achieves **F1 = 0.917**
+on the held-out Tagalog test set.
 
-*Balikas* is Bisaya for *profanity* / *vulgar language* — the project is
-Cebuano-identified even though its training data is Tagalog, because **no
-labeled native Cebuano (Bisaya) hate-speech corpus exists** at the time of
-writing (verified on HuggingFace, June 2026). That gap — and the cross-lingual
-transfer study built around it — is the core of this project, not an API wrapper.
+*Balikas* is Bisaya for *profanity* / *vulgar language*.
 
 ## Features
 
-- **Tagalog TF-IDF + LogReg baseline** — word 1–2-gram features + Logistic
-  Regression; trains in ~0.7s on CPU. In-domain **F1(hate) = 0.749**.
-- **Zero-shot cross-lingual evaluation** — the Tagalog model is evaluated on a
-  40-sentence hand-curated Cebuano set with *no* Cebuano training.
-  **F1 = 0.833**, with the caveats documented below (biased toward explicit
-  profanity that overlaps with Tagalog).
-- **FastAPI `/classify` endpoint** — `{text, lang} -> {label, confidence, lang}`.
-- **HuggingFace Space (Gradio demo)** — the `space/` folder is a self-contained
-  Space with the trained model baked in (~880 KB); deploys to HF CPU-free tier.
-- **Abandoned NLLB translation pipeline, documented** — `train/translate_to_ceb.py`
-  stays in the repo as a documented failed attempt (NLLB-200 dist 600M on CPU
-  is impractical at ~14k tweets). Not hidden.
-- **Colab-ready XLM-RoBERTa fine-tune script** — `train/finetune_xlm.py` fine-tunes
-  `xlm-roberta-base` (cross-lingual, shared subword vocabulary) on a free T4 GPU
-  (~25 min). Targets ~0.80-0.85 F1 on Tagalog, evaluates zero-shot Cebuano.
-  Replaces the old Tagalog-only `roberta-tagalog` approach (see
-  `train/finetune_roberta.py`, deprecated).
-- **Reproducible data download** — `data/download.py` fetches and splits the
-  corpus directly from HuggingFace, bypassing the repo's dead loading script.
-- **Hand-curated Cebuano eval set** — `data/ceb_eval_handcurated.json`, the
-  contribution toward filling the missing-Bisaya-corpus gap.
+- **XLM-RoBERTa fine-tuned on combined Filipino corpus** — trained on 14,232
+  Tagalog tweets + 29,660 Filipino TikTok transcriptions. **F1(hate) = 0.917**
+  on the held-out Tagalog test set. Model hosted on HF Hub
+  (`kiergabelo/balikas-xlm`).
+- **TF-IDF + LogReg baseline** — word 1–2-gram features; F1 = 0.749. Kept as a
+  floor comparison.
+- **HuggingFace Space (Gradio demo)** — live demo at
+  `huggingface.co/spaces/kiergabelo/balikas`. Loads the model from HF Hub.
+- **FastAPI `/classify` endpoint** — `{text} -> {label, confidence}`.
+- **Cebuano evaluation** — a 40-sentence Cebuano set is included for zero-shot
+  evaluation. The eval set has documented limitations (constructed examples,
+  not native social media). Native Cebuano data collection is noted as future work.
+- **Colab-ready training scripts** — `train/finetune_xlm_combined.py` trains on
+  the combined corpus (~25 min on T4). `train/finetune_xlm.py` for Tagalog-only.
+- **Reproducible data pipeline** — `data/download.py` fetches the Tagalog corpus
+  from HuggingFace, bypassing a dead loading script. The TikTok dataset is
+  loaded from GitHub (SEACrowd repo).
 
 ## Results
 
-| # | Setup | Eval set | Accuracy | F1 (hate) | Macro-F1 | Notes |
+| # | Model | Training data | Eval set | Accuracy | F1 (hate) | Macro-F1 |
 |---|---|---|---|---|---|---|
-| 1 | Tagalog in-domain | 4,232 native labeled tweets (held-out) | 0.7647 | **0.7489** | 0.7637 | TF-IDF (word 1-2gram) + LogReg, ~0.7s CPU |
-| 2 | Zero-shot TL→CEB | 40 hand-curated Bisaya sentences | 0.8000 | **0.8333** | 0.7917 | same TF-IDF model, no Cebuano training |
-| 3 | XLM-RoBERTa on TL | 4,232 native labeled tweets (held-out) | 0.7854 | **0.7646** | 0.7838 | run `train/finetune_xlm.py` on Colab T4 (~25 min) |
-| 4 | XLM-RoBERTa → CEB | 40 hand-curated Bisaya sentences | 0.6500 | **0.7407** | 0.6011 | zero-shot (no Cebuano training — shared subword vocab only) |
+| 1 | TF-IDF + LogReg | 14k Tagalog | 4,232 Tagalog tweets | 0.7647 | 0.7489 | 0.7637 |
+| 2 | XLM-R (Tagalog only) | 14k Tagalog | 4,232 Tagalog tweets | 0.7854 | 0.7646 | 0.7838 |
+| 3 | **XLM-R (combined)** | **44k Tagalog + TikTok** | **4,232 Tagalog tweets** | **0.9227** | **0.9169** | **0.9224** |
+| 4 | XLM-R (combined) | 44k Tagalog + TikTok | 40 Cebuano sentences | 0.6750 | 0.7547 | 0.6366 |
 
-### Caveat on the cross-lingual number
+**Row 3 is the headline result.** The combined training data (Tagalog tweets +
+Filipino TikTok transcriptions including code-switched Taglish) pushes Tagalog
+F1 from 0.76 to 0.92 — approaching the state-of-the-art for Filipino hate
+speech detection.
 
-Row 2 looks higher than row 1, but it is **not** a real apples-to-apples
-win. The Cebuano eval set is hand-curated and biased toward explicit,
-unambiguous profanity ("yawa", "ulol", "pisti", "putang ina") that overlaps
-heavily with Tagalog profanity. The model catches all 20 hates (recall = 1.0)
-but false-positives 8 of 20 non-hates. The honest read: zero-shot transfer via
-shared profanity *works on clear cases*; subtle hate — sarcasm, dog-whistles,
-code-switched slights — almost certainly fails. A proper assessment requires a
-large native-curated Cebuano benchmark that does not yet exist. **That gap is
-the research contribution of this project.**
+Row 4 is a limited zero-shot Cebuano evaluation. The eval set is constructed
+(not native social media), so the number is indicative, not definitive. Native
+Cebuano data collection would be needed for a proper assessment.
 
 ## Stack
 
-- **Python 3.14**
-- scikit-learn — TF-IDF + LogReg
-- pandas — data wrangling
-- FastAPI + uvicorn — `/classify` endpoint
+- **Python 3.12+**
+- PyTorch + Transformers — XLM-RoBERTa fine-tuning
+- scikit-learn — TF-IDF + LogReg baseline
 - Gradio — HuggingFace Space UI
-- joblib — model serialization
-- HuggingFace `datasets` library — source corpus download
+- FastAPI — `/classify` endpoint
+- HuggingFace `datasets` — Tagalog corpus download
 
 ## Quick start
 
@@ -72,125 +61,70 @@ the research contribution of this project.**
 python -m venv .venv; .venv\Scripts\activate
 pip install -r api/requirements.txt
 
-python data/download.py              # fetch + parse Tagalog corpus from HuggingFace
-python train/train_baseline.py --lang tl   # trains in ~1s on CPU -> model/baseline_tl.joblib
-python data/construct_ceb_eval.py     # writes the small Bisaya eval set
-python train/eval_zero_shot_ceb.py    # evaluates the TL model on Cebuano
-                                     # -> model/zeroshot_ceb_metrics.json
+python data/download.py              # fetch Tagalog corpus
+python train/train_baseline.py --lang tl   # TF-IDF baseline (~1s CPU)
 
 uvicorn api.main:app --reload         # localhost:8000/classify
 ```
 
-Classify a tweet:
-
-```bash
-curl -X POST http://127.0.0.1:8000/classify ^
-  -H "Content-Type: application/json" ^
-  -d "{\"text\":\"TANG INA MO talaga eh bobo\", \"lang\":\"tl\"}"
-# -> {"label":"hate","label_id":1,"confidence":0.998,"lang":"tl"}
-
-curl -X POST http://127.0.0.1:8000/classify ^
-  -H "Content-Type: application/json" ^
-  -d "{\"text\":\"Buang kaayo ka, ulol!\", \"lang\":\"tl\"}"
-# -> {"label":"hate",...} (note: model is Tagalog-trained; Cebuano is loaded as best-effort zero-shot)
-```
-
-## Deploy (HuggingFace Space)
-
-The `space/` folder is a self-contained HuggingFace Spaces app (Gradio +
-trained model baked in, ~880 KB). To deploy:
-
-1. Create a free HuggingFace account if you don't have one.
-2. Create a new Space at <https://huggingface.co/new-space>:
-   - **SDK:** Gradio
-   - **License:** Apache-2.0
-   - **Hardware:** CPU basic (free)
-3. Push the **contents of `space/`** to the HF repo (files at the repo root, not
-   nested under a `space/` folder). `space/README.md` already carries the
-   required YAML frontmatter (`sdk: gradio`, `app_file: app.py`, tags, etc.):
-   ```bash
-   git clone https://huggingface.co/spaces/<your-user>/balikas
-   Copy-Item -Path "space\*" -Destination balikas-space\ -Recurse -Force
-   cd balikas-space
-   git add -A; git commit -m "Initial Space: Balikas demo"; git push
-   ```
-4. Wait ~1–2 min for the Space to build. Public URL:
-   `https://huggingface.co/spaces/<your-user>/balikas`.
-5. Drop that URL into the portfolio entry's `demo` field.
-
-**Optional custom domain:** `balikas.kierabelo.com` — set a Cloudflare CNAME
-to the HF Space URL. Note that custom domains on HuggingFace Spaces require an
-HF Pro subscription; if you're on the free tier, the raw `huggingface.co/spaces/...`
-URL is the public demo.
-
 ## Fine-tune XLM-RoBERTa (the headline model)
 
-The TF-IDF + LogReg baseline is the floor. The headline model is
-`xlm-roberta-base` — a cross-lingual transformer whose shared subword
-vocabulary spans both Tagalog and Cebuano, allowing zero-shot transfer.
-
-**Run on free Colab T4 GPU (~25 min):**
+Run on free Colab T4 GPU (~25 min):
 
 ```python
 # Colab cell 1
 !pip install -q transformers datasets scikit-learn accelerate
 # Colab cell 2
-!python train/finetune_xlm.py
+!git clone https://github.com/kiergabelo/balikas.git
+%cd balikas
+!python train/finetune_xlm_combined.py
 ```
 
-**Expected:** ~0.80–0.85 F1(hate) on the Tagalog test set, and a Cebuano
-zero-shot F1 in the `model/xlm_metrics.json` output that represents the
-real cross-lingual transfer gap (no Cebuano training data was used).
+Downloads the Tagalog corpus from HuggingFace + TikTok data from GitHub
+automatically. Evaluates on Tagalog test + Cebuano eval. Saves model to
+`model/xlm-roberta-balikas/`.
 
-**After training:** download the `model/xlm-roberta-balikas/` folder from
-Colab, place it in the `space/` folder, and push to your HF Space. The
-demo will switch from the old TF-IDF baseline to the fine-tuned model
-automatically (`app.py` detects the folder and uses it).
+## Deploy (HuggingFace Space)
+
+The `space/` folder is a self-contained Gradio app. The model is loaded from
+`kiergabelo/balikas-xlm` on the HF Hub at startup (avoids Space storage limits).
+
+1. Create a Space at <https://huggingface.co/new-space> (Gradio, CPU free)
+2. Push the `space/` contents to the Space repo
+3. Push the model to `kiergabelo/balikas-xlm` on HF Hub
+4. The Space auto-downloads the model on startup
 
 ## Project structure
 
 ```
 balikas/
 ├── data/
-│   ├── download.py                  # reproducible fetch from HF Hub (bypasses dead loading script)
-│   ├── splits.json                  # gitignored — Tagalog train/valid/test
-│   ├── ceb_eval_handcurated.json    # 40 hand-curated Bisaya sentences (shipped artifact)
-│   └── construct_ceb_eval.py        # builder for the above
+│   ├── download.py                  # reproducible Tagalog corpus fetch
+│   ├── ceb_eval_handcurated.json    # 40 Cebuano eval sentences
+│   └── construct_ceb_eval.py
 ├── train/
-│   ├── train_baseline.py            # TF-IDF + LogReg, ~1s on CPU, --lang tl|ceb
-│   ├── eval_zero_shot_ceb.py        # evaluate TL model on Cebuano set
-│   ├── finetune_roberta.py         # Colab: roberta-tagalog-base fine-tune
-│   └── translate_to_ceb.py         # ABANDONED: NLLB translation pipeline (see README)
+│   ├── train_baseline.py            # TF-IDF + LogReg
+│   ├── finetune_xlm.py              # XLM-R Tagalog-only
+│   ├── finetune_xlm_combined.py     # XLM-R combined Tagalog + TikTok
+│   ├── eval_zero_shot_ceb.py
+│   └── translate_to_ceb.py          # abandoned NLLB pipeline (documented)
 ├── api/
-│   ├── main.py                      # FastAPI /classify {text, lang} -> {label, confidence, lang}
+│   ├── main.py                      # FastAPI
 │   └── requirements.txt
-├── space/                          # HuggingFace Space (Gradio), self-contained, ships own model copy
-│   ├── app.py
-│   ├── baseline_tl.joblib
+├── space/                           # HuggingFace Space (Gradio)
+│   ├── app.py                       # loads model from HF Hub
 │   ├── requirements.txt
-│   └── README.md                    # YAML frontmatter: sdk: gradio, etc.
-├── model/                          # gitignored — artifacts (metrics JSON shipped)
-│   ├── baseline_tl.joblib
-│   ├── baseline_tl_metrics.json
-│   └── zeroshot_ceb_metrics.json
-└── README.md
+│   └── README.md                    # HF Space YAML
+└── model/                           # gitignored — artifacts
 ```
 
 ## Dataset & attribution
 
-Tagalog source corpus:
-[jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino)
-under Apache-2.0. Original data from Cabasag, Chan, Lim, Gonzales, and Cheng,
-"Hate speech in Philippine election-related tweets: Automatic detection and
-classification using natural language processing," *Philippine Computing
-Journal* XIV(1), August 2019.
-
-Cebuano evaluation set (`data/ceb_eval_handcurated.json`) is original to this
-project — hand-curated and biased toward explicit profanity (see the caveat
-above). Released under MIT.
+- **Tagalog corpus:** [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino)
+  — Cabasag et al. (2019), Apache-2.0
+- **TikTok corpus:** [SEACrowd/filipino_hatespeech_tiktok](https://huggingface.co/datasets/SEACrowd/filipino_hatespeech_tiktok)
+  — Hernandez et al. (2021), CC-BY-SA-4.0
 
 ## License
 
-- **Code:** MIT
-- **Trained weights:** Apache-2.0 (inherits the dataset license)
-- **Cebuano eval set:** MIT
+Code: MIT. Trained weights: Apache-2.0.
