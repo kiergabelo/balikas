@@ -78,15 +78,22 @@ try:
     except Exception:
         pass
 
-    # Attempt 2: Download raw CSV directly from GitHub
+    # Attempt 2: Download raw CSV directly from GitHub as a zip
     if tiktok_all is None:
-        import subprocess, csv
+        import subprocess, csv, urllib.request, zipfile
         print("  HF loading script unsupported — downloading raw data from GitHub ...")
-        subprocess.run(["git", "clone", "--depth", "1",
-                        "https://github.com/imperialite/filipino-tiktok-hatespeech.git",
-                        "/tmp/tiktok-hs"], check=True, capture_output=True)
+        zip_url = "https://github.com/imperialite/filipino-tiktok-hatespeech/archive/refs/heads/main.zip"
+        zip_path = "/tmp/tiktok-hs.zip"
+        try:
+            urllib.request.urlretrieve(zip_url, zip_path)
+        except Exception:
+            zip_url = "https://github.com/imperialite/filipino-tiktok-hatespeech/archive/refs/heads/master.zip"
+            urllib.request.urlretrieve(zip_url, zip_path)
+        extract_dir = "/tmp/tiktok-hs"
+        with zipfile.ZipFile(zip_path) as z:
+            z.extractall(extract_dir)
         tiktok_rows = []
-        for root, dirs, files in os.walk("/tmp/tiktok-hs"):
+        for root, dirs, files in os.walk(extract_dir):
             for fn in files:
                 if fn.endswith(".csv"):
                     path = os.path.join(root, fn)
@@ -94,7 +101,6 @@ try:
                         with open(path, encoding="utf-8", errors="ignore") as f:
                             rdr = csv.DictReader(f)
                             for row in rdr:
-                                # Try common column name patterns
                                 text = row.get("text") or row.get("tweet") or row.get("content") or row.get("sentence") or ""
                                 label_raw = row.get("label") or row.get("hate") or row.get("classification") or row.get("hate_label") or ""
                                 if not text:
