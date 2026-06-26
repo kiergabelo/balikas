@@ -25,8 +25,11 @@ transfer study built around it — is the core of this project, not an API wrapp
 - **Abandoned NLLB translation pipeline, documented** — `train/translate_to_ceb.py`
   stays in the repo as a documented failed attempt (NLLB-200 dist 600M on CPU
   is impractical at ~14k tweets). Not hidden.
-- **Colab-ready RoBERTa-Tagalog fine-tune script** — `train/finetune_roberta.py`
-  targets `jcblaise/roberta-tagalog-base` on a free T4 GPU as the ceiling model.
+- **Colab-ready XLM-RoBERTa fine-tune script** — `train/finetune_xlm.py` fine-tunes
+  `xlm-roberta-base` (cross-lingual, shared subword vocabulary) on a free T4 GPU
+  (~25 min). Targets ~0.80-0.85 F1 on Tagalog, evaluates zero-shot Cebuano.
+  Replaces the old Tagalog-only `roberta-tagalog` approach (see
+  `train/finetune_roberta.py`, deprecated).
 - **Reproducible data download** — `data/download.py` fetches and splits the
   corpus directly from HuggingFace, bypassing the repo's dead loading script.
 - **Hand-curated Cebuano eval set** — `data/ceb_eval_handcurated.json`, the
@@ -37,7 +40,9 @@ transfer study built around it — is the core of this project, not an API wrapp
 | # | Setup | Eval set | Accuracy | F1 (hate) | Macro-F1 | Notes |
 |---|---|---|---|---|---|---|
 | 1 | Tagalog in-domain | 4,232 native labeled tweets (held-out) | 0.7647 | **0.7489** | 0.7637 | TF-IDF (word 1-2gram) + LogReg, ~0.7s CPU |
-| 2 | Zero-shot TL→CEB | 40 hand-curated Bisaya sentences | 0.8000 | **0.8333** | 0.7917 | same model, no Cebuano training |
+| 2 | Zero-shot TL→CEB | 40 hand-curated Bisaya sentences | 0.8000 | **0.8333** | 0.7917 | same TF-IDF model, no Cebuano training |
+| 3 | XLM-RoBERTa on TL | 4,232 native labeled tweets (held-out) | _TBD_ | _TBD_ | _TBD_ | run `train/finetune_xlm.py` on Colab T4 (~25 min) |
+| 4 | XLM-RoBERTa → CEB | 40 hand-curated Bisaya sentences | _TBD_ | _TBD_ | _TBD_ | zero-shot (no Cebuano training — shared subword vocab only) |
 
 ### Caveat on the cross-lingual number
 
@@ -118,20 +123,29 @@ to the HF Space URL. Note that custom domains on HuggingFace Spaces require an
 HF Pro subscription; if you're on the free tier, the raw `huggingface.co/spaces/...`
 URL is the public demo.
 
-## Fine-tune RoBERTa-Tagalog (the ceiling model)
+## Fine-tune XLM-RoBERTa (the headline model)
 
-The classical TF-IDF + LogReg baseline is the floor. The ceiling is a fine-tuned
-`jcblaise/roberta-tagalog-base`. Run on free Colab (T4 GPU):
+The TF-IDF + LogReg baseline is the floor. The headline model is
+`xlm-roberta-base` — a cross-lingual transformer whose shared subword
+vocabulary spans both Tagalog and Cebuano, allowing zero-shot transfer.
+
+**Run on free Colab T4 GPU (~25 min):**
 
 ```python
 # Colab cell 1
 !pip install -q transformers datasets scikit-learn accelerate
 # Colab cell 2
-!python train/finetune_roberta.py
+!python train/finetune_xlm.py
 ```
 
-Expected: ~0.82–0.86 F1(hate) on the Tagalog test set. The fine-tuned weights
-+ eval numbers go in `model/` and update the results table above.
+**Expected:** ~0.80–0.85 F1(hate) on the Tagalog test set, and a Cebuano
+zero-shot F1 in the `model/xlm_metrics.json` output that represents the
+real cross-lingual transfer gap (no Cebuano training data was used).
+
+**After training:** download the `model/xlm-roberta-balikas/` folder from
+Colab, place it in the `space/` folder, and push to your HF Space. The
+demo will switch from the old TF-IDF baseline to the fine-tuned model
+automatically (`app.py` detects the folder and uses it).
 
 ## Project structure
 

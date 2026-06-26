@@ -1,25 +1,40 @@
 """Balikas — Filipino Hate Speech Detection (HuggingFace Spaces, Gradio).
 
-Loads the Tagalog-trained TF-IDF + LogReg baseline and serves a single-input
-demo. Cebuano input works as best-effort zero-shot (see main repo README for
-the cross-lingual study and its caveats).
+XLM-RoBERTa fine-tuned on the Tagalog Cabasag et al. (2019) corpus, with
+zero-shot cross-lingual evaluation on a hand-curated Cebuano set.
 """
-import os, joblib
+import os
 import gradio as gr
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-MODEL = os.path.join(HERE, "baseline_tl.joblib")
-pipe = joblib.load(MODEL)
+MODEL_DIR = os.path.join(HERE, "xlm-roberta-balikas")
+
+if os.path.exists(MODEL_DIR):
+    tok = AutoTokenizer.from_pretrained(MODEL_DIR)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
+else:
+    # Fallback: download the base model if fine-tuned weights aren't present yet
+    tok = AutoTokenizer.from_pretrained("xlm-roberta-base")
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "xlm-roberta-base", num_labels=2
+    )
+
+model.eval()
 LABELS = {0: "non-hate", 1: "hate"}
 
 def classify(text):
     if not text or not text.strip():
         return {LABELS[0]: 0.0, LABELS[1]: 0.0}, "_(empty input)_"
-    proba = pipe.predict_proba([text])[0]
-    label_id = int(proba.argmax())
-    conf = float(proba[label_id])
+    inputs = tok(text, return_tensors="pt", truncation=True, max_length=128)
+    with torch.no_grad():
+        logits = model(**inputs).logits
+    probs = torch.softmax(logits, dim=1)[0]
+    label_id = int(probs.argmax())
+    conf = float(probs[label_id])
     pred_line = f"**{LABELS[label_id].upper()}** ({conf:.1%} confidence)"
-    return {LABELS[i]: float(p) for i, p in enumerate(proba)}, pred_line
+    return {LABELS[i]: float(probs[i]) for i in range(2)}, pred_line
 
 examples = [
     ["TANG INA MO talaga eh bobo"],
@@ -32,15 +47,13 @@ examples = [
 with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Markdown("# \U0001f6e1\ufe0f Balikas — Filipino Hate Speech Detection")
     gr.Markdown(
-        "Tagalog-trained TF-IDF + LogReg baseline. "
-        "**F1 (hate) = 0.749** on the 4,232-tweet Cabasag et al. (2019) "
-        "held-out test set. Cebuano input is classified **zero-shot** "
-        "(transfer F1 = 0.833 on a 40-sentence hand-curated set; see main "
-        "repo README for caveats — the number is biased by explicit "
-        "profanity overlap)."
+        "XLM-RoBERTa fine-tuned on the Cabasag et al. (2019) Tagalog hate speech "
+        "corpus with zero-shot cross-lingual evaluation on a hand-curated "
+        "Cebuano set. No native Bisaya hate-speech benchmark exists — the model's "
+        "Cebuano performance is documented in the main repo with honest caveats."
     )
     with gr.Row():
-        inp = gr.Textbox(placeholder="Type a Filipino tweet or sentence…",
+        inp = gr.Textbox(placeholder="Type a Filipino or Cebuano tweet...",
                          label="Input text", lines=3)
     with gr.Row():
         out_label = gr.Label(num_top_classes=2, label="Confidence")
@@ -50,9 +63,10 @@ with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Examples(examples=examples, inputs=inp)
     gr.Markdown(
         "---\n"
-        "*Model is Tagalog-trained. Cebuano input is best-effort zero-shot. "
-        "No native Bisaya hate-speech benchmark exists (see main repo README "
-        "for the methodology discussion).*\n\n"
+        "*XLM-RoBERTa-base fine-tuned on Tagalog hate speech. Cebuano input "
+        "is zero-shot cross-lingual transfer via shared subword vocabulary — "
+        "no Cebuano training data was used. The transfer gap is documented in "
+        "the main repo README.*\n\n"
         "**Dataset:** [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino) "
         "(Apache-2.0, Cabasag et al. 2019).  \n"
         "**Code:** [github.com/kiergabelo/balikas](https://github.com/kiergabelo/balikas)."
