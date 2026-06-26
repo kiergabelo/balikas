@@ -1,7 +1,7 @@
 ---
 title: Balikas
 emoji: "\U0001F6E1\uFE0F"
-colorFrom: slate
+colorFrom: gray
 colorTo: indigo
 sdk: gradio
 sdk_version: "5.0.0"
@@ -18,7 +18,7 @@ language:
   - tl
   - ceb
 license: apache-2.0
-short_description: XLM-RoBERTa hate speech detection with Cebuano cross-lingual eval
+short_description: Tagalog hate speech classifier with Cebuano zero-shot eval
 ---
 
 # Balikas — Filipino Hate Speech Detection
