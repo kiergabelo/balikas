@@ -30,23 +30,23 @@ def classify(text):
 examples = [
     ["TANG INA MO talaga eh bobo"],
     ["Bobo mo naman, ulol ka!"],
-    ["Maayong buntag sa tanan, maayo unta ang inyong adlaw."],
-    ["Salamat kaayo sa tabang nimo kagahapon."],
-    ["Buang kaayo ka, ulol!"],
     ["Putang ina ng gobyernong ito, walang silbi!"],
-    ["Ganahan ko nga mo-eskwela ko karong adlawa."],
+    ["Salamat sa tulong mo kahapon, laking bagay."],
+    ["Maganda ang panahon ngayon, magandang araw sa lahat."],
+    ["Inaasahan ko na matapos na ang proyekto bukas."],
+    ["Walang silbi ang pulitiko, puro pangako walang ginawa."],
 ]
 
 with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Markdown("# \U0001f6e1\ufe0f Balikas — Filipino Hate Speech Detection")
     gr.Markdown(
         "XLM-RoBERTa fine-tuned on **43,892 Filipino social media samples** "
-        "(Tagalog election tweets + TikTok transcriptions including code-switched "
-        "Taglish and Cebuano). **F1 = 0.917** on held-out Tagalog test. "
-        "Type any Filipino or Cebuano text to classify it."
+        "(election tweets + TikTok transcriptions including code-switched "
+        "Taglish). **F1 = 0.917** on held-out test. "
+        "Type any Filipino text to classify it."
     )
     with gr.Row():
-        inp = gr.Textbox(placeholder="Type a Filipino or Cebuano tweet...",
+        inp = gr.Textbox(placeholder="Type a Filipino tweet or comment...",
                          label="Input text", lines=3)
     with gr.Row():
         out_label = gr.Label(num_top_classes=2, label="Confidence")
@@ -56,7 +56,7 @@ with gr.Blocks(title="Balikas — Filipino Hate Speech") as demo:
     gr.Examples(examples=examples, inputs=inp)
     gr.Markdown(
         "---\n"
-        "**Model:** XLM-RoBERTa fine-tuned on combined Tagalog + Filipino TikTok corpus.\n\n"
+        "**Model:** XLM-RoBERTa fine-tuned on combined Filipino corpus (election tweets + TikTok transcriptions).\n\n"
         "**Dataset:** [jcblaise/hatespeech_filipino](https://huggingface.co/datasets/jcblaise/hatespeech_filipino) "
         "(Cabasag et al. 2019) + "
         "[SEACrowd/filipino_hatespeech_tiktok](https://huggingface.co/datasets/SEACrowd/filipino_hatespeech_tiktok) "
